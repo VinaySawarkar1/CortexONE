@@ -5,4 +5,4 @@
 #
 # This script calls the original odoo-bin executable.
 # Do NOT rename odoo-bin — it carries Odoo's copyright header.
-exec "$(dirname "$(realpath "$0")")/../../opt/cortexone/odoo-bin" "$@"
+exec "/opt/cortexone/odoo-bin" "$@"
