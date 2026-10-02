@@ -222,6 +222,13 @@ jobs:
           docker compose pull app
           # Now stop ALL services so nginx releases port 80/443 before we re-bind
           docker compose down --remove-orphans || true
+          
+          # Forcefully kill any rogue container still holding port 80 to prevent bind errors
+          PORT_HOLDER=$(docker ps -q --filter "expose=80" --filter "expose=443")
+          if [ -n "$PORT_HOLDER" ]; then
+            echo ">>> Force-killing stray containers holding ports: $PORT_HOLDER"
+            docker rm -f $PORT_HOLDER || true
+          fi
           # Start fresh
           docker compose up -d
 
