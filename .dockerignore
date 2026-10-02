@@ -1,0 +1,15 @@
+.git
+.gitignore
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.idea
+.vscode
+.ruff_cache
+odoo/.git
