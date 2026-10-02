@@ -1,0 +1,86 @@
+# CortexONE — Docker Compose Stack
+# License: LGPL-3 — https://www.gnu.org/licenses/lgpl-3.0.html
+# Copyright (C) 2024 Cortex AI Technologies
+#
+# Services: cortexone (app) + postgres + nginx
+# All secrets via environment variables — never hardcoded.
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: cortexone_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cortexone}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-cortexone_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cortexone}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cortexone_net
+
+  # ── CortexONE App ───────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cortexone_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      CORTEXONE_DB_HOST: postgres
+      CORTEXONE_DB_PORT: 5432
+      CORTEXONE_DB_USER: ${POSTGRES_USER:-cortexone}
+      CORTEXONE_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CORTEXONE_DB_NAME: ${POSTGRES_DB:-cortexone_prod}
+      # Admin password (use strong value in production)
+      CORTEXONE_ADMIN_PASSWD: ${CORTEXONE_ADMIN_PASSWD:?CORTEXONE_ADMIN_PASSWD must be set}
+      # Email (optional)
+      CORTEXONE_SMTP_HOST: ${CORTEXONE_SMTP_HOST:-localhost}
+      CORTEXONE_SMTP_PORT: ${CORTEXONE_SMTP_PORT:-587}
+      CORTEXONE_SMTP_USER: ${CORTEXONE_SMTP_USER:-}
+      CORTEXONE_SMTP_PASSWORD: ${CORTEXONE_SMTP_PASSWORD:-}
+    volumes:
+      - app_filestore:/var/lib/cortexone/filestore
+      - ./config/cortexone.conf:/etc/cortexone/cortexone.conf:ro
+    ports:
+      - "127.0.0.1:8069:8069"
+      - "127.0.0.1:8072:8072"
+    networks:
+      - cortexone_net
+
+  # ── Nginx Reverse Proxy ─────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: cortexone_nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/cortexone.conf:/etc/nginx/conf.d/cortexone.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - cortexone_net
+
+volumes:
+  postgres_data:
+  app_filestore:
+  nginx_cache:
+
+networks:
+  cortexone_net:
+    driver: bridge

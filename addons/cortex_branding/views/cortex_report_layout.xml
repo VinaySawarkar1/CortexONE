@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html -->
+<!-- Copyright (C) 2024 Cortex AI Technologies -->
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Override external PDF report layout — replaces Odoo logo in PDFs
+         ═══════════════════════════════════════════════════════════════ -->
+    <template id="cortex_external_layout_header"
+              inherit_id="web.external_layout_boxed"
+              priority="50"
+              optional="True">
+
+        <xpath expr="//img[contains(@src,'logo') or contains(@t-att-src,'logo')]"
+               position="replace">
+            <img
+                t-if="company.logo"
+                t-att-src="image_data_uri(company.logo)"
+                style="max-height:45px;"
+                alt="CortexONE"
+            />
+            <img
+                t-else=""
+                src="/cortex_branding/static/src/img/cortexone_logo.png"
+                style="max-height:45px;"
+                alt="CortexONE"
+            />
+        </xpath>
+
+        <!-- Replace "Odoo" in report footer -->
+        <xpath expr="//*[contains(text(),'Odoo')]" position="replace">
+            <span>CortexONE ERP</span>
+        </xpath>
+
+    </template>
+
+    <!-- Also override the standard layout (non-boxed) -->
+    <template id="cortex_external_layout_standard"
+              inherit_id="web.external_layout_standard"
+              priority="50"
+              optional="True">
+
+        <xpath expr="//img[contains(@src,'logo') or contains(@t-att-src,'logo')]"
+               position="replace">
+            <img
+                t-if="company.logo"
+                t-att-src="image_data_uri(company.logo)"
+                style="max-height:45px;"
+                alt="CortexONE"
+            />
+            <img
+                t-else=""
+                src="/cortex_branding/static/src/img/cortexone_logo.png"
+                style="max-height:45px;"
+                alt="CortexONE"
+            />
+        </xpath>
+
+    </template>
+
+</odoo>

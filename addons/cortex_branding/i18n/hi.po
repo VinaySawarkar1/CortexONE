@@ -1,0 +1,42 @@
+# Translation of CortexONE Branding (Hindi)
+# License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html
+# Copyright (C) 2024 Cortex AI Technologies
+msgid ""
+msgstr ""
+"Project-Id-Version: CortexONE 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-10-01 00:00+0000\n"
+"PO-Revision-Date: 2024-10-01 00:00+0000\n"
+"Last-Translator: Cortex AI Technologies <support@cortexaitechnologies.com>\n"
+"Language-Team: Hindi\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Odoo"
+msgstr "CortexONE"
+
+msgid "Powered by Odoo"
+msgstr "CortexONE द्वारा संचालित"
+
+msgid "Odoo Online"
+msgstr "CortexONE"
+
+msgid "Odoo Community"
+msgstr "CortexONE"
+
+msgid "Odoo Enterprise"
+msgstr "CortexONE"
+
+msgid "My Odoo.com account"
+msgstr "मेरा खाता"
+
+msgid "Odoo Apps"
+msgstr "ऐप्लिकेशन"
+
+msgid "Odoo Bot"
+msgstr "CortexONE सहायक"
+
+msgid "OdooBot"
+msgstr "CortexBot"

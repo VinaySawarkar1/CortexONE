@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html -->
+<!-- Copyright (C) 2024 Cortex AI Technologies -->
+<odoo>
+    <!-- Security group for API key management -->
+    <record id="group_cortex_api_admin" model="res.groups">
+        <field name="name">CortexONE API Administrator</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+</odoo>

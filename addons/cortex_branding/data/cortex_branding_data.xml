@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html -->
+<!-- Copyright (C) 2024 Cortex AI Technologies -->
+<odoo>
+    <data noupdate="1">
+
+        <!-- Set product name system parameter -->
+        <record id="param_product_name" model="ir.config_parameter">
+            <field name="key">cortex_branding.product_name</field>
+            <field name="value">CortexONE</field>
+        </record>
+
+        <record id="param_support_email" model="ir.config_parameter">
+            <field name="key">cortex_branding.support_email</field>
+            <field name="value">support@cortexaitechnologies.com</field>
+        </record>
+
+        <record id="param_website_url" model="ir.config_parameter">
+            <field name="key">cortex_branding.website_url</field>
+            <field name="value">https://cortexaitechnologies.com</field>
+        </record>
+
+        <!-- Override web client title -->
+        <record id="param_web_title" model="ir.config_parameter">
+            <field name="key">web.base.url.freeze</field>
+            <field name="value">False</field>
+        </record>
+
+    </data>
+</odoo>

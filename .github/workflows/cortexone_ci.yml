@@ -1,0 +1,232 @@
+name: CortexONE CI — Build & Test
+
+# Triggers on PRs to develop or production
+on:
+  pull_request:
+    branches: [develop, production]
+  push:
+    branches: [develop, production]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1: Lint custom addons
+  # ─────────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint Custom Addons
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff (linter)
+        run: pip install ruff
+
+      - name: Run ruff on custom addons
+        run: ruff check addons/cortex_branding addons/cortex_api
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2: Build Docker image
+  # ─────────────────────────────────────────────────────────────────────────────
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-22.04
+    needs: lint
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta (tags)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 3: Run addon tests
+  # ─────────────────────────────────────────────────────────────────────────────
+  test:
+    name: Run Addon Tests
+    runs-on: ubuntu-22.04
+    needs: build
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cortexone
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: cortexone_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libpq-dev libxml2-dev libxslt1-dev libjpeg-dev \
+            libldap2-dev libsasl2-dev wkhtmltopdf
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run custom addon tests
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          python odoo-bin \
+            --database cortexone_test \
+            --db_host 127.0.0.1 \
+            --db_port 5432 \
+            --db_user cortexone \
+            --db_password testpassword \
+            --addons-path addons,odoo/addons \
+            --test-enable \
+            --stop-after-init \
+            -i cortex_branding,cortex_api \
+            --log-level=warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 4a: Deploy to STAGING (develop branch only)
+  # Target: cortexonestage.cortexaitechnologies.com
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy → Staging
+    runs-on: ubuntu-22.04
+    needs: test
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://cortexonestage.cortexaitechnologies.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CORTEXONE_SSH }}" > ~/.ssh/cortexone.pem
+          chmod 600 ~/.ssh/cortexone.pem
+          ssh-keyscan -H 130.210.25.122 >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging server
+        run: |
+          ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
+            ubuntu@130.210.25.122 << 'ENDSSH'
+            set -e
+            echo "=== CortexONE Staging Deploy ==="
+            cd /opt/cortexone
+
+            # Pull latest develop
+            git fetch origin develop
+            git checkout develop
+            git reset --hard origin/develop
+
+            # Pull new image and restart
+            docker compose pull app
+            docker compose up -d --no-deps app
+            docker compose exec -T app cortexone \
+              --database cortexone_stage \
+              --update cortex_branding,cortex_api \
+              --stop-after-init \
+              --no-http
+
+            echo "=== Staging deploy complete ==="
+          ENDSSH
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/cortexone.pem
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 4b: Deploy to PRODUCTION (production branch only)
+  # Target: cortexone.cortexaitechnologies.com
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy-production:
+    name: Deploy → Production
+    runs-on: ubuntu-22.04
+    needs: test
+    if: github.ref == 'refs/heads/production' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://cortexone.cortexaitechnologies.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.CORTEXONE_SSH }}" > ~/.ssh/cortexone.pem
+          chmod 600 ~/.ssh/cortexone.pem
+          ssh-keyscan -H 130.210.25.122 >> ~/.ssh/known_hosts
+
+      - name: Deploy to production server
+        run: |
+          ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
+            ubuntu@130.210.25.122 << 'ENDSSH'
+            set -e
+            echo "=== CortexONE Production Deploy ==="
+            cd /opt/cortexone
+
+            # Pull latest production branch
+            git fetch origin production
+            git checkout production
+            git reset --hard origin/production
+
+            # Pull new image and do rolling restart
+            docker compose pull app
+            docker compose up -d --no-deps --wait app
+            docker compose exec -T app cortexone \
+              --database cortexone_prod \
+              --update cortex_branding,cortex_api \
+              --stop-after-init \
+              --no-http
+
+            # Reload nginx without downtime
+            docker compose exec -T nginx nginx -s reload
+
+            echo "=== Production deploy complete ==="
+          ENDSSH
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f ~/.ssh/cortexone.pem

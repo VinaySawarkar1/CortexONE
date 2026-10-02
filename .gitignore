@@ -1,0 +1,56 @@
+# CortexONE .gitignore
+# Do not commit secrets, build artifacts, or local data.
+
+# ── Environment secrets ───────────────────────────────────────────────────────
+.env
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.whl
+.venv/
+venv/
+env/
+
+# ── Node (frontend assets compiled by Odoo build tool) ───────────────────────
+node_modules/
+.npm/
+
+# ── Odoo runtime data (never in git) ─────────────────────────────────────────
+/filestore/
+/sessions/
+*.log
+
+# ── Database files ────────────────────────────────────────────────────────────
+*.sql
+*.dump
+*.db
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+nginx/ssl/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Test artifacts ────────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ── Temporary ────────────────────────────────────────────────────────────────
+*.tmp
+*.bak

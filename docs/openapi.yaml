@@ -1,0 +1,400 @@
+openapi: "3.1.0"
+info:
+  title: CortexONE REST API
+  version: "1.0.0"
+  description: |
+    REST API for CortexONE ERP, exposed under `/api/v1/`.
+    Built on Odoo Community 18.0 (LGPL-3).
+    © 2024 Cortex AI Technologies
+  contact:
+    name: Cortex AI Technologies Support
+    url: https://cortexaitechnologies.com
+    email: support@cortexaitechnologies.com
+  license:
+    name: LGPL-3.0
+    url: https://www.gnu.org/licenses/lgpl-3.0.html
+
+servers:
+  - url: https://cortexone.cortexaitechnologies.com
+    description: Production
+  - url: https://cortexonestage.cortexaitechnologies.com
+    description: Staging
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-CortexONE-API-Key
+      description: |
+        Obtain a key via POST /api/v1/auth/token.
+        Include it as a header on every subsequent request.
+
+  schemas:
+    Success:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data: { }
+        error: { type: string, nullable: true, example: null }
+
+    Error:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        data: { nullable: true, example: null }
+        error: { type: string, example: "Invalid or expired API key" }
+
+    Pagination:
+      type: object
+      properties:
+        items: { type: array }
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+
+    Partner:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        mobile: { type: string }
+        street: { type: string }
+        city: { type: string }
+        zip: { type: string }
+        country_id: { type: array, items: { } }
+        is_company: { type: boolean }
+        vat: { type: string }
+        website: { type: string }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        list_price: { type: number }
+        standard_price: { type: number }
+        type: { type: string, enum: [consu, service, product] }
+        categ_id: { type: array }
+        default_code: { type: string }
+        barcode: { type: string }
+        active: { type: boolean }
+
+    SaleOrder:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        partner_id: { type: array }
+        date_order: { type: string, format: date-time }
+        amount_untaxed: { type: number }
+        amount_tax: { type: number }
+        amount_total: { type: number }
+        state: { type: string, enum: [draft, sent, sale, done, cancel] }
+        currency_id: { type: array }
+        note: { type: string }
+        lines: { type: array, items: { $ref: '#/components/schemas/SaleOrderLine' } }
+
+    SaleOrderLine:
+      type: object
+      properties:
+        id: { type: integer }
+        product_id: { type: array }
+        product_uom_qty: { type: number }
+        price_unit: { type: number }
+        price_subtotal: { type: number }
+        name: { type: string }
+
+    Invoice:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        partner_id: { type: array }
+        invoice_date: { type: string, format: date }
+        invoice_date_due: { type: string, format: date }
+        amount_untaxed: { type: number }
+        amount_tax: { type: number }
+        amount_total: { type: number }
+        payment_state: { type: string }
+        state: { type: string, enum: [draft, posted, cancel] }
+        currency_id: { type: array }
+        lines: { type: array }
+
+paths:
+  /api/v1/auth/token:
+    post:
+      tags: [Auth]
+      summary: Obtain an API key
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password]
+              properties:
+                login:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: admin
+                db:
+                  type: string
+                  example: cortexone_prod
+      responses:
+        "200":
+          description: API key issued
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          api_key: { type: string }
+                          uid: { type: integer }
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    delete:
+      tags: [Auth]
+      summary: Revoke the current API key
+      responses:
+        "200":
+          description: Token revoked
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/partners:
+    get:
+      tags: [Partners]
+      summary: List partners
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 500 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Paginated partner list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Pagination'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/Partner' }
+        "401": { description: Unauthorized }
+
+  /api/v1/partners/{id}:
+    get:
+      tags: [Partners]
+      summary: Get a single partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Partner detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Partner' }
+        "404": { description: Not found }
+        "401": { description: Unauthorized }
+
+  /api/v1/products:
+    get:
+      tags: [Products]
+      summary: List products
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Paginated product list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Pagination'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/Product' }
+        "401": { description: Unauthorized }
+
+  /api/v1/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get a single product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Product' }
+        "404": { description: Not found }
+        "401": { description: Unauthorized }
+
+  /api/v1/sales:
+    get:
+      tags: [Sales]
+      summary: List sale orders
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Paginated sale order list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Pagination'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/SaleOrder' }
+        "401": { description: Unauthorized }
+
+  /api/v1/sales/{id}:
+    get:
+      tags: [Sales]
+      summary: Get a single sale order with lines
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Sale order with lines
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/SaleOrder' }
+        "404": { description: Not found }
+        "401": { description: Unauthorized }
+
+  /api/v1/invoices:
+    get:
+      tags: [Invoices]
+      summary: List customer invoices
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Paginated invoice list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Pagination'
+                          - type: object
+                            properties:
+                              items:
+                                type: array
+                                items: { $ref: '#/components/schemas/Invoice' }
+        "401": { description: Unauthorized }
+
+  /api/v1/invoices/{id}:
+    get:
+      tags: [Invoices]
+      summary: Get a single invoice with lines
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Invoice with lines
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Success'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Invoice' }
+        "404": { description: Not found }
+        "401": { description: Unauthorized }

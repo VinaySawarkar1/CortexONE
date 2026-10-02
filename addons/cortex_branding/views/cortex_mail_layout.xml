@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html -->
+<!-- Copyright (C) 2024 Cortex AI Technologies -->
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Override mail notification layout
+         Replaces Odoo logo/name in email notifications
+         ═══════════════════════════════════════════════════════════════ -->
+    <template id="cortex_mail_notification_layout"
+              inherit_id="mail.mail_notification_layout"
+              priority="50">
+
+        <!-- Replace logo in email header -->
+        <xpath expr="//img[contains(@t-att-src,'logo') or contains(@src,'logo')]" position="replace">
+            <img
+                src="/cortex_branding/static/src/img/cortexone_logo_email.png"
+                alt="CortexONE"
+                style="max-width:160px; height:auto;"
+            />
+        </xpath>
+
+        <!-- Replace "Odoo" text in footer -->
+        <xpath expr="//span[contains(text(),'Odoo')] | //a[contains(text(),'Odoo')]"
+               position="replace">
+            <span>CortexONE ERP</span>
+        </xpath>
+
+        <!-- Remove odoo.com link in footer -->
+        <xpath expr="//a[contains(@href,'odoo.com')]" position="replace">
+            <a href="https://cortexaitechnologies.com">cortexaitechnologies.com</a>
+        </xpath>
+
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Override portal / website footer "Powered by Odoo"
+         ═══════════════════════════════════════════════════════════════ -->
+    <template id="cortex_portal_footer"
+              inherit_id="web.portal_my_home"
+              priority="50"
+              optional="True">
+        <xpath expr="//*[contains(text(),'Powered by') or contains(@class,'powered')]"
+               position="replace">
+            <span class="text-muted small">
+                Powered by <a href="https://cortexaitechnologies.com">CortexONE</a>
+            </span>
+        </xpath>
+    </template>
+
+</odoo>

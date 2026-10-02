@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html -->
+<!-- Copyright (C) 2024 Cortex AI Technologies -->
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Override the web login layout (web.login_layout)
+         Replace logo, title, and remove "Powered by Odoo" footer
+         ═══════════════════════════════════════════════════════════════ -->
+    <template id="cortex_login_layout" inherit_id="web.login_layout" priority="50">
+
+        <!-- Replace logo in login header -->
+        <xpath expr="//img[contains(@class,'o_login_logo') or @t-att-src]" position="replace">
+            <img
+                src="/cortex_branding/static/src/img/cortexone_logo.png"
+                alt="CortexONE"
+                class="o_login_logo"
+                style="max-width:220px; margin-bottom:1.5rem;"
+            />
+        </xpath>
+
+        <!-- Replace browser/page title -->
+        <xpath expr="//title" position="replace">
+            <title>CortexONE — Enterprise Resource Planning</title>
+        </xpath>
+
+        <!-- Remove "Powered by Odoo" footer -->
+        <xpath expr="//div[contains(@class,'o_login_footer') or contains(text(),'Powered')]" position="replace"/>
+
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         Override web.webclient_bootstrap to set HTML title meta
+         ═══════════════════════════════════════════════════════════════ -->
+    <template id="cortex_webclient_title" inherit_id="web.webclient_bootstrap" priority="50">
+        <xpath expr="//title" position="replace">
+            <title>CortexONE ERP</title>
+        </xpath>
+        <!-- Replace favicon -->
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
+            <link rel="shortcut icon" type="image/png"
+                  href="/cortex_branding/static/src/img/cortexone_favicon.png"/>
+        </xpath>
+        <xpath expr="//link[@rel='icon']" position="replace">
+            <link rel="icon" type="image/png"
+                  href="/cortex_branding/static/src/img/cortexone_favicon.png"/>
+        </xpath>
+    </template>
+
+</odoo>

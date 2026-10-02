@@ -1,0 +1,40 @@
+/* =============================================================================
+   CortexONE Design System — SCSS Variables
+   License: LGPL-3 — https://www.gnu.org/licenses/lgpl-3.0.html
+   Copyright (C) 2024 Cortex AI Technologies
+   =============================================================================
+   All primary Odoo colour tokens are overridden here.
+   Change only these variables to retheme the entire product.
+   ============================================================================= */
+
+// ── Brand palette ─────────────────────────────────────────────────────────────
+$cortex-primary:        #1A73E8;   // CortexONE electric blue
+$cortex-secondary:      #0D47A1;   // Deep navy
+$cortex-accent:         #00BCD4;   // Cyan accent
+$cortex-success:        #00C853;   // Green
+$cortex-warning:        #FFB300;   // Amber
+$cortex-danger:         #D32F2F;   // Red
+$cortex-dark:           #0A0E1A;   // Near-black background
+$cortex-surface:        #131929;   // Card/surface dark
+$cortex-text:           #E8EAF0;   // Primary text on dark
+$cortex-text-muted:     #8892A4;   // Muted text
+$cortex-border:         #243050;   // Border colour
+
+// ── Map to Odoo Bootstrap token names ─────────────────────────────────────────
+$primary:               $cortex-primary;
+$secondary:             $cortex-secondary;
+$success:               $cortex-success;
+$warning:               $cortex-warning;
+$danger:                $cortex-danger;
+$info:                  $cortex-accent;
+
+// ── Typography ─────────────────────────────────────────────────────────────────
+$font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                          Roboto, Oxygen, Ubuntu, sans-serif;
+
+// ── Component overrides ────────────────────────────────────────────────────────
+$border-radius:          8px;
+$border-radius-sm:       4px;
+$border-radius-lg:       12px;
+$box-shadow:             0 4px 24px rgba(0, 0, 0, 0.35);
+$box-shadow-sm:          0 2px 8px  rgba(0, 0, 0, 0.25);

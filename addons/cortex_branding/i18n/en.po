@@ -1,0 +1,49 @@
+# Translation of CortexONE Branding (English)
+# License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html
+# Copyright (C) 2024 Cortex AI Technologies
+#
+# This file overrides Odoo's English strings where user-visible
+# text contains the word "Odoo". Internal technical strings are not changed.
+msgid ""
+msgstr ""
+"Project-Id-Version: CortexONE 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-10-01 00:00+0000\n"
+"PO-Revision-Date: 2024-10-01 00:00+0000\n"
+"Last-Translator: Cortex AI Technologies <support@cortexaitechnologies.com>\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# User-visible strings — override "Odoo" → "CortexONE"
+msgid "Odoo"
+msgstr "CortexONE"
+
+msgid "Powered by Odoo"
+msgstr "Powered by CortexONE"
+
+msgid "Odoo Online"
+msgstr "CortexONE"
+
+msgid "Odoo Community"
+msgstr "CortexONE"
+
+msgid "Odoo Enterprise"
+msgstr "CortexONE"
+
+msgid "My Odoo.com account"
+msgstr "My Account"
+
+msgid "Upgrade your database"
+msgstr ""
+
+msgid "Odoo Apps"
+msgstr "Applications"
+
+msgid "Odoo Bot"
+msgstr "CortexONE Assistant"
+
+msgid "OdooBot"
+msgstr "CortexBot"

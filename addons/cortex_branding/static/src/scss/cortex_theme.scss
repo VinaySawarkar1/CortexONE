@@ -1,0 +1,111 @@
+/* =============================================================================
+   CortexONE Theme Styles
+   License: LGPL-3 — https://www.gnu.org/licenses/lgpl-3.0.html
+   Copyright (C) 2024 Cortex AI Technologies
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// ── Login page ────────────────────────────────────────────────────────────────
+.o_login_screen {
+  background: linear-gradient(135deg, $cortex-dark 0%, #0d1b3e 100%) !important;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba($cortex-primary, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 10%, rgba($cortex-accent, 0.10) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}
+
+.o_login_auth {
+  .card {
+    background: rgba($cortex-surface, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid $cortex-border;
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow;
+  }
+
+  .o_login_logo img {
+    max-width: 200px;
+    margin-bottom: 1.5rem;
+  }
+
+  // Replace "Powered by Odoo" footer text
+  .o_login_footer,
+  .o_login_auth .oe_login_footer,
+  [class*="powered"] {
+    display: none !important;
+  }
+}
+
+// ── Topbar / Navbar ───────────────────────────────────────────────────────────
+.o_main_navbar {
+  background: linear-gradient(90deg, $cortex-dark 0%, $cortex-secondary 100%);
+  border-bottom: 1px solid $cortex-border;
+
+  .o_menu_brand {
+    color: $cortex-text !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+}
+
+// ── Sidebar / App menu ────────────────────────────────────────────────────────
+.o_home_menu {
+  background: linear-gradient(160deg, $cortex-dark 0%, $cortex-surface 100%);
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-primary {
+  background: linear-gradient(135deg, $cortex-primary, $cortex-secondary);
+  border-color: $cortex-primary;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, darken($cortex-primary, 8%), $cortex-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($cortex-primary, 0.4);
+  }
+}
+
+// ── Hide enterprise upsell / upgrade banners ──────────────────────────────────
+.o_enterprise_warning,
+.o_enterprise_notification,
+.o_settings_enterprise_section,
+.o_upgrade_module,
+[data-module="upgrade"],
+.o_action_upgrade_page,
+.o_res_config_dev_tool .o_upgrade_app,
+.module_install_banner,
+.o_install_module_banner {
+  display: none !important;
+}
+
+// ── Settings — hide Odoo.com links ───────────────────────────────────────────
+.o_setting_odoo_account,
+a[href*="odoo.com"],
+a[href*="iap.odoo.com"] {
+  display: none !important;
+}
+
+// ── Cards & Forms ─────────────────────────────────────────────────────────────
+.o_form_view .o_form_sheet {
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+}
+
+// ── Kanban cards ──────────────────────────────────────────────────────────────
+.o_kanban_record {
+  border-radius: $border-radius;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}

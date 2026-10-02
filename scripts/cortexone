@@ -1,0 +1,8 @@
+#!/bin/sh
+# CortexONE wrapper script
+# License: LGPL-3 — https://www.gnu.org/licenses/lgpl-3.0.html
+# Copyright (C) 2024 Cortex AI Technologies
+#
+# This script calls the original odoo-bin executable.
+# Do NOT rename odoo-bin — it carries Odoo's copyright header.
+exec "$(dirname "$(realpath "$0")")/../../opt/cortexone/odoo-bin" "$@"
