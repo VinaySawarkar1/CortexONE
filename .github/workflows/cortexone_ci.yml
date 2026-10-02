@@ -185,6 +185,11 @@ jobs:
             # Use -B to forcefully create/reset the branch tracking origin, disambiguating local files
             git checkout -f -B $TARGET_BRANCH origin/$TARGET_BRANCH
             git reset --hard origin/$TARGET_BRANCH
+            
+            if [ ! -f .env ]; then
+              echo "Creating .env from .env.example..."
+              cp .env.example .env
+            fi
 
             docker compose pull app || true
             docker compose up -d --no-deps app
