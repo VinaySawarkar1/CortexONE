@@ -169,23 +169,30 @@ jobs:
           ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
             ubuntu@130.210.25.122 << ENDSSH
             set -e
-            echo "=== CortexONE Deploying branch \$TARGET_BRANCH to \$ENV_NAME ==="
+            echo "=== CortexONE Deploying branch $TARGET_BRANCH to $ENV_NAME ==="
+            
+            if [ ! -d "/opt/cortexone/.git" ]; then
+              sudo mkdir -p /opt/cortexone
+              sudo chown -R ubuntu:ubuntu /opt/cortexone
+              git clone https://github.com/VinaySawarkar1/CortexONE.git /opt/cortexone
+            fi
+            
             cd /opt/cortexone
 
-            git fetch origin \$TARGET_BRANCH
-            git checkout \$TARGET_BRANCH
-            git reset --hard origin/\$TARGET_BRANCH
+            git fetch origin $TARGET_BRANCH
+            git checkout $TARGET_BRANCH
+            git reset --hard origin/$TARGET_BRANCH
 
-            docker compose pull app
+            docker compose pull app || true
             docker compose up -d --no-deps app
             docker compose exec -T app cortexone \
-              --database \$DB_NAME \
+              --database $DB_NAME \
               --update cortex_branding,cortex_api \
               --stop-after-init \
               --no-http
 
-            if [ "\$ENV_NAME" = "prod" ]; then
-              docker compose exec -T nginx nginx -s reload
+            if [ "$ENV_NAME" = "prod" ]; then
+              docker compose exec -T nginx nginx -s reload || true
             fi
 
             echo "=== Deploy complete ==="
