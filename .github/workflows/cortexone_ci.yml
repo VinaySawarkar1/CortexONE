@@ -2,10 +2,11 @@ name: CortexONE CI — Build & Test
 
 # Triggers on PRs to develop or production
 on:
+  workflow_dispatch:
   pull_request:
-    branches: [develop, production]
+    branches: [develop, production, odoo_core, main]
   push:
-    branches: [develop, production]
+    branches: [develop, production, odoo_core, main]
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
