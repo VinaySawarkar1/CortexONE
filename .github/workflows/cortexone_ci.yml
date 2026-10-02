@@ -174,13 +174,15 @@ jobs:
             if [ ! -d "/opt/cortexone/.git" ]; then
               sudo mkdir -p /opt/cortexone
               sudo chown -R ubuntu:ubuntu /opt/cortexone
-              git clone https://github.com/VinaySawarkar1/CortexONE.git /opt/cortexone
+              cd /opt/cortexone
+              git init
+              git remote add origin https://github.com/VinaySawarkar1/CortexONE.git
             fi
             
             cd /opt/cortexone
 
             git fetch origin $TARGET_BRANCH
-            git checkout $TARGET_BRANCH
+            git checkout -f $TARGET_BRANCH || git checkout -b $TARGET_BRANCH origin/$TARGET_BRANCH
             git reset --hard origin/$TARGET_BRANCH
 
             docker compose pull app || true
