@@ -16,7 +16,7 @@ class TestCortexApiAuth(HttpCase):
         super().setUp()
         # Register a test API key in config
         self.env['ir.config_parameter'].set_param(
-            'cortex_api.api_keys', 'test-key-123'
+            'cortex_api.api_keys', 'test-key-123',
         )
 
     def test_missing_api_key(self):
@@ -28,7 +28,7 @@ class TestCortexApiAuth(HttpCase):
         """Wrong key should return 401."""
         res = self.url_open(
             '/api/v1/partners',
-            headers={'X-CortexONE-API-Key': 'wrong-key'}
+            headers={'X-CortexONE-API-Key': 'wrong-key'},
         )
         self.assertEqual(res.status_code, 401)
 
@@ -36,7 +36,7 @@ class TestCortexApiAuth(HttpCase):
         """Valid key should return 200 with items list."""
         res = self.url_open(
             '/api/v1/partners',
-            headers={'X-CortexONE-API-Key': 'test-key-123'}
+            headers={'X-CortexONE-API-Key': 'test-key-123'},
         )
         self.assertEqual(res.status_code, 200)
         data = res.json()
@@ -47,7 +47,7 @@ class TestCortexApiAuth(HttpCase):
         """Valid key should return 200 for products."""
         res = self.url_open(
             '/api/v1/products',
-            headers={'X-CortexONE-API-Key': 'test-key-123'}
+            headers={'X-CortexONE-API-Key': 'test-key-123'},
         )
         self.assertEqual(res.status_code, 200)
         data = res.json()
@@ -57,7 +57,7 @@ class TestCortexApiAuth(HttpCase):
         """Non-existent partner ID returns 404."""
         res = self.url_open(
             '/api/v1/partners/9999999',
-            headers={'X-CortexONE-API-Key': 'test-key-123'}
+            headers={'X-CortexONE-API-Key': 'test-key-123'},
         )
         self.assertEqual(res.status_code, 404)
 

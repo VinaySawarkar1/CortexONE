@@ -14,7 +14,7 @@ import json
 import logging
 
 from odoo import http
-from odoo.http import request, Response
+from odoo.http import Response, request
 
 _logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def require_api_key(fn):
             return _error('Missing API key header (X-CortexONE-API-Key)', 401)
         # Key is stored as a comma-separated list in ir.config_parameter
         stored = request.env['ir.config_parameter'].sudo().get_param(
-            'cortex_api.api_keys', ''
+            'cortex_api.api_keys', '',
         )
         valid_keys = {k.strip() for k in stored.split(',') if k.strip()}
         if api_key not in valid_keys:
@@ -65,7 +65,7 @@ class CortexApiBase(http.Controller):
         limit = min(int(request.httprequest.args.get('limit', 50)), 500)
         offset = int(request.httprequest.args.get('offset', 0))
         records = request.env[model].sudo().search_read(
-            domain, fields, limit=limit, offset=offset, order=order
+            domain, fields, limit=limit, offset=offset, order=order,
         )
         total = request.env[model].sudo().search_count(domain)
         return {'items': records, 'total': total, 'limit': limit, 'offset': offset}

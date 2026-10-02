@@ -9,7 +9,8 @@ import logging
 
 from odoo import http
 from odoo.http import request
-from .base import CortexApiBase, _json_response, _error, require_api_key
+
+from .base import CortexApiBase, _error, _json_response, require_api_key
 
 _logger = logging.getLogger(__name__)
 
