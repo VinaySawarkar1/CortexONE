@@ -5,4 +5,15 @@
 #
 # This script calls the original odoo-bin executable.
 # Do NOT rename odoo-bin — it carries Odoo's copyright header.
+# Prepare arguments from environment variables (odoo config doesn't interpolate)
+[ -n "$CORTEXONE_DB_HOST" ] && set -- "$@" "--db_host=$CORTEXONE_DB_HOST"
+[ -n "$CORTEXONE_DB_PORT" ] && set -- "$@" "--db_port=$CORTEXONE_DB_PORT"
+[ -n "$CORTEXONE_DB_USER" ] && set -- "$@" "--db_user=$CORTEXONE_DB_USER"
+[ -n "$CORTEXONE_DB_PASSWORD" ] && set -- "$@" "--db_password=$CORTEXONE_DB_PASSWORD"
+[ -n "$CORTEXONE_ADMIN_PASSWD" ] && set -- "$@" "--admin-passwd=$CORTEXONE_ADMIN_PASSWD"
+[ -n "$CORTEXONE_SMTP_HOST" ] && set -- "$@" "--smtp=$CORTEXONE_SMTP_HOST"
+[ -n "$CORTEXONE_SMTP_PORT" ] && set -- "$@" "--smtp-port=$CORTEXONE_SMTP_PORT"
+[ -n "$CORTEXONE_SMTP_USER" ] && set -- "$@" "--smtp-user=$CORTEXONE_SMTP_USER"
+[ -n "$CORTEXONE_SMTP_PASSWORD" ] && set -- "$@" "--smtp-password=$CORTEXONE_SMTP_PASSWORD"
+
 exec "/opt/cortexone/odoo-bin" "$@"
