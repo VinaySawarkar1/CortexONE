@@ -28,6 +28,7 @@ services:
 
   # ── CortexONE App ───────────────────────────────────────────────────────────
   app:
+    image: ${CORTEXONE_IMAGE:-cortexone-app:latest}
     build:
       context: .
       dockerfile: Dockerfile

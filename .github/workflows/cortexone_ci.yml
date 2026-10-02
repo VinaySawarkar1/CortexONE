@@ -33,7 +33,7 @@ jobs:
         run: ruff check addons/cortex_branding addons/cortex_api
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # JOB 2: Build Docker image
+  # JOB 2: Build Docker image and push to GHCR
   # ─────────────────────────────────────────────────────────────────────────────
   build:
     name: Build Docker Image
@@ -137,9 +137,10 @@ jobs:
             --log-level=warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # JOB 4: Deploy Application (Single deployment node per branch)
-  # Target Staging: develop branch -> cortexonestage.cortexaitechnologies.com
-  # Target Production: production branch -> cortexone.cortexaitechnologies.com
+  # JOB 4: Deploy Application
+  #   - Pulls the pre-built GHCR image onto the remote server (no local build)
+  #   - Updates config files via git pull
+  #   - Runs Odoo module update
   # ─────────────────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy Application
@@ -151,7 +152,9 @@ jobs:
       url: ${{ github.ref == 'refs/heads/production' && 'https://cortexone.cortexaitechnologies.com' || 'https://cortexonestage.cortexaitechnologies.com' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Compute image tag
+        id: repo
+        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Write SSH key
         run: |
@@ -165,50 +168,81 @@ jobs:
           TARGET_BRANCH: ${{ github.ref_name }}
           ENV_NAME: ${{ github.ref == 'refs/heads/production' && 'prod' || 'stage' }}
           DB_NAME: ${{ github.ref == 'refs/heads/production' && 'cortexone_prod' || 'cortexone_stage' }}
+          GHCR_IMAGE: ${{ steps.repo.outputs.image }}:${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Pass all variables as positional args to bash -s on the remote host.
+          # Inside the script: $1=BRANCH $2=ENV $3=DB $4=IMAGE $5=TOKEN
           ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
-            ubuntu@130.210.25.122 << ENDSSH
-            set -e
-            echo "=== CortexONE Deploying branch $TARGET_BRANCH to $ENV_NAME ==="
-            
-            if [ ! -d "/opt/cortexone/.git" ]; then
-              sudo mkdir -p /opt/cortexone
-              sudo chown -R ubuntu:ubuntu /opt/cortexone
-              cd /opt/cortexone
-              git init
-              git remote add origin https://github.com/VinaySawarkar1/CortexONE.git
-            fi
-            
+            ubuntu@130.210.25.122 \
+            bash -s -- "$TARGET_BRANCH" "$ENV_NAME" "$DB_NAME" "$GHCR_IMAGE" "$GH_TOKEN" << 'DEPLOY'
+
+          set -e
+          BRANCH="$1"; ENV="$2"; DB="$3"; IMAGE="$4"; TOKEN="$5"
+
+          echo "=== CortexONE Deploy ==="
+          echo "  Branch: $BRANCH | Env: $ENV | DB: $DB"
+          echo "  Image:  $IMAGE"
+
+          # ── 1. Ensure the repo is cloned (for config, docker-compose, nginx) ──
+          if [ ! -d "/opt/cortexone/.git" ]; then
+            echo ">>> First deploy — initializing repo..."
+            sudo mkdir -p /opt/cortexone
+            sudo chown -R ubuntu:ubuntu /opt/cortexone
             cd /opt/cortexone
-            rm -f .git/index.lock
-            git fetch origin $TARGET_BRANCH
-            # Use -B to forcefully create/reset the branch tracking origin, disambiguating local files
-            git checkout -f -B $TARGET_BRANCH origin/$TARGET_BRANCH
-            git reset --hard origin/$TARGET_BRANCH
-            
-            if [ ! -f .env ]; then
-              echo "Creating .env from .env.example..."
-              cp .env.example .env
+            git init
+            git remote add origin https://github.com/VinaySawarkar1/CortexONE.git
+          fi
+
+          cd /opt/cortexone
+          rm -f .git/index.lock
+          git fetch origin "$BRANCH"
+          git checkout -f -B "$BRANCH" "origin/$BRANCH"
+          git reset --hard "origin/$BRANCH"
+
+          # ── 2. Ensure .env exists ──
+          if [ ! -f .env ]; then
+            echo ">>> Creating .env from template — UPDATE WITH REAL VALUES!"
+            cp .env.example .env
+          fi
+
+          # ── 3. Authenticate to GHCR and set image for docker compose ──
+          echo "$TOKEN" | docker login ghcr.io -u github-actions --password-stdin
+          export CORTEXONE_IMAGE="$IMAGE"
+
+          # ── 4. Clean up dangling images only (preserve DB volumes!) ──
+          docker image prune -f || true
+
+          # ── 5. Stop old app, pull new image, start everything ──
+          docker compose stop app || true
+          docker compose rm -f app || true
+          docker compose pull app
+          docker compose up -d
+
+          # ── 6. Wait for app container to be running (max 90s) ──
+          echo ">>> Waiting for cortexone_app..."
+          for i in $(seq 1 18); do
+            STATUS=$(docker inspect --format='{{.State.Status}}' cortexone_app 2>/dev/null || echo "missing")
+            if [ "$STATUS" = "running" ]; then
+              echo ">>> cortexone_app is running!"
+              break
             fi
+            echo "  attempt $i/18 — status=$STATUS — waiting 5s..."
+            sleep 5
+          done
 
-            echo "Cleaning up old docker resources to free disk space..."
-            docker system prune -af --volumes || true
+          # ── 7. Run module update ──
+          echo ">>> Running module update on $DB..."
+          docker compose exec -T app cortexone \
+            --database "$DB" \
+            --update cortex_branding,cortex_api \
+            --stop-after-init \
+            --no-http || echo "WARNING: Module update returned non-zero — check logs."
 
-            docker compose pull app || true
-            docker compose up -d --no-deps app
-            docker compose exec -T app cortexone \
-              --database $DB_NAME \
-              --update cortex_branding,cortex_api \
-              --stop-after-init \
-              --no-http
-
-            if [ "$ENV_NAME" = "prod" ]; then
-              docker compose exec -T nginx nginx -s reload || true
-            fi
-
-            echo "=== Deploy complete ==="
-          ENDSSH
+          echo "=== Deploy complete ==="
+          DEPLOY
 
       - name: Clean up SSH key
         if: always()
         run: rm -f ~/.ssh/cortexone.pem
+
