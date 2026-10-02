@@ -191,6 +191,9 @@ jobs:
               cp .env.example .env
             fi
 
+            echo "Cleaning up old docker resources to free disk space..."
+            docker system prune -af --volumes || true
+
             docker compose pull app || true
             docker compose up -d --no-deps app
             docker compose exec -T app cortexone \
