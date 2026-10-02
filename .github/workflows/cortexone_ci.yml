@@ -4,9 +4,9 @@ name: CortexONE CI — Build & Test
 on:
   workflow_dispatch:
   pull_request:
-    branches: [develop, production, odoo_core, main]
+    branches: [develop, production]
   push:
-    branches: [develop, production, odoo_core, main]
+    branches: [develop, production]
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────

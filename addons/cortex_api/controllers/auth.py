@@ -8,12 +8,13 @@ POST /api/v1/auth/token   — Exchange username+password for an API token stored
 DELETE /api/v1/auth/token — Revoke the key.
 """
 
-import secrets
 import logging
+import secrets
 
 from odoo import http
 from odoo.http import request
-from .base import CortexApiBase, _json_response, _error, require_api_key
+
+from .base import HEADER_API_KEY, CortexApiBase, _error, _json_response, require_api_key
 
 _logger = logging.getLogger(__name__)
 
@@ -31,12 +32,12 @@ class CortexAuthController(CortexApiBase):
         """
         try:
             payload = request.get_json_data()
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             return _error('Request body must be JSON', 400)
 
-        login    = payload.get('login', '').strip()
+        login = payload.get('login', '').strip()
         password = payload.get('password', '').strip()
-        db       = payload.get('db') or request.db
+        db = payload.get('db') or request.db
 
         if not login or not password:
             return _error('login and password are required', 400)
@@ -61,7 +62,6 @@ class CortexAuthController(CortexApiBase):
     @require_api_key
     def revoke_token(self, **kwargs):
         """Revoke the current API key."""
-        from .base import HEADER_API_KEY
         api_key = request.httprequest.headers.get(HEADER_API_KEY, '').strip()
         ICP = request.env['ir.config_parameter'].sudo()
         existing = ICP.get_param('cortex_api.api_keys', '')
