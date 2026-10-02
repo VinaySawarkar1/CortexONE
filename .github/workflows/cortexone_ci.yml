@@ -180,9 +180,10 @@ jobs:
             fi
             
             cd /opt/cortexone
-
+            rm -f .git/index.lock
             git fetch origin $TARGET_BRANCH
-            git checkout -f $TARGET_BRANCH || git checkout -b $TARGET_BRANCH origin/$TARGET_BRANCH
+            # Use -B to forcefully create/reset the branch tracking origin, disambiguating local files
+            git checkout -f -B $TARGET_BRANCH origin/$TARGET_BRANCH
             git reset --hard origin/$TARGET_BRANCH
 
             docker compose pull app || true
