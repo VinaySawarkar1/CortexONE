@@ -217,10 +217,12 @@ jobs:
           # ── 4. Clean up dangling images only (preserve DB volumes!) ──
           docker image prune -f || true
 
-          # ── 5. Stop old app, pull new image, start everything ──
-          docker compose stop app || true
-          docker compose rm -f app || true
+          # ── 5. Pull new image then do a clean restart of all services ──
+          # Pull first (while old containers still run = zero extra downtime on pull)
           docker compose pull app
+          # Now stop ALL services so nginx releases port 80/443 before we re-bind
+          docker compose down --remove-orphans || true
+          # Start fresh
           docker compose up -d
 
           # ── 6. Wait for app container to be running (max 90s) ──
