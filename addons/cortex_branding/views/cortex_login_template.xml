@@ -10,7 +10,7 @@
     <template id="cortex_login_layout" inherit_id="web.login_layout" priority="50">
 
         <!-- Replace logo in login header -->
-        <xpath expr="//img[contains(@class,'o_login_logo') or @t-att-src]" position="replace">
+        <xpath expr="//div[contains(@class,'text-center') and contains(@class,'border-bottom')]//img" position="replace">
             <img
                 src="/cortex_branding/static/src/img/cortexone_logo.png"
                 alt="CortexONE"
@@ -24,8 +24,10 @@
             <title>CortexONE — Enterprise Resource Planning</title>
         </xpath>
 
-        <!-- Remove "Powered by Odoo" footer -->
-        <xpath expr="//div[contains(@class,'o_login_footer') or contains(text(),'Powered')]" position="replace"/>
+        <!-- Replace "Powered by Odoo" footer link -->
+        <xpath expr="//a[contains(@href,'odoo.com')]" position="replace">
+            <span>CortexONE ERP</span>
+        </xpath>
 
     </template>
 

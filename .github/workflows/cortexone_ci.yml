@@ -111,10 +111,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libpq-dev libxml2-dev libxslt1-dev libjpeg-dev \
-            libldap2-dev libsasl2-dev wkhtmltopdf
+            libldap2-dev libsasl2-dev libcairo2-dev wkhtmltopdf
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install rlpycairo
+          pip install -r requirements.txt
 
       - name: Run custom addon tests
         env:
