@@ -1,12 +1,15 @@
 name: CortexONE CI — Build & Test
 
-# Triggers on PRs to develop or production
 on:
   workflow_dispatch:
   pull_request:
     branches: [develop, production]
   push:
     branches: [develop, production]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
@@ -41,11 +44,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lowercase repository name for Docker image tag
+        id: repo
+        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Docker meta (tags)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ steps.repo.outputs.image }}
           tags: |
             type=ref,event=branch
             type=sha,prefix=sha-
@@ -126,17 +133,18 @@ jobs:
             --log-level=warn
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # JOB 4a: Deploy to STAGING (develop branch only)
-  # Target: cortexonestage.cortexaitechnologies.com
+  # JOB 4: Deploy Application (Single deployment node per branch)
+  # Target Staging: develop branch -> cortexonestage.cortexaitechnologies.com
+  # Target Production: production branch -> cortexone.cortexaitechnologies.com
   # ─────────────────────────────────────────────────────────────────────────────
-  deploy-staging:
-    name: Deploy → Staging
+  deploy:
+    name: Deploy Application
     runs-on: ubuntu-22.04
     needs: test
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/production')
     environment:
-      name: staging
-      url: https://cortexonestage.cortexaitechnologies.com
+      name: ${{ github.ref == 'refs/heads/production' && 'production' || 'staging' }}
+      url: ${{ github.ref == 'refs/heads/production' && 'https://cortexone.cortexaitechnologies.com' || 'https://cortexonestage.cortexaitechnologies.com' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -148,84 +156,35 @@ jobs:
           chmod 600 ~/.ssh/cortexone.pem
           ssh-keyscan -H 130.210.25.122 >> ~/.ssh/known_hosts
 
-      - name: Deploy to staging server
+      - name: Deploy via SSH
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          ENV_NAME: ${{ github.ref == 'refs/heads/production' && 'prod' || 'stage' }}
+          DB_NAME: ${{ github.ref == 'refs/heads/production' && 'cortexone_prod' || 'cortexone_stage' }}
         run: |
           ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
-            ubuntu@130.210.25.122 << 'ENDSSH'
+            ubuntu@130.210.25.122 << ENDSSH
             set -e
-            echo "=== CortexONE Staging Deploy ==="
+            echo "=== CortexONE Deploying branch \$TARGET_BRANCH to \$ENV_NAME ==="
             cd /opt/cortexone
 
-            # Pull latest develop
-            git fetch origin develop
-            git checkout develop
-            git reset --hard origin/develop
+            git fetch origin \$TARGET_BRANCH
+            git checkout \$TARGET_BRANCH
+            git reset --hard origin/\$TARGET_BRANCH
 
-            # Pull new image and restart
             docker compose pull app
             docker compose up -d --no-deps app
             docker compose exec -T app cortexone \
-              --database cortexone_stage \
+              --database \$DB_NAME \
               --update cortex_branding,cortex_api \
               --stop-after-init \
               --no-http
 
-            echo "=== Staging deploy complete ==="
-          ENDSSH
+            if [ "\$ENV_NAME" = "prod" ]; then
+              docker compose exec -T nginx nginx -s reload
+            fi
 
-      - name: Clean up SSH key
-        if: always()
-        run: rm -f ~/.ssh/cortexone.pem
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # JOB 4b: Deploy to PRODUCTION (production branch only)
-  # Target: cortexone.cortexaitechnologies.com
-  # ─────────────────────────────────────────────────────────────────────────────
-  deploy-production:
-    name: Deploy → Production
-    runs-on: ubuntu-22.04
-    needs: test
-    if: github.ref == 'refs/heads/production' && github.event_name == 'push'
-    environment:
-      name: production
-      url: https://cortexone.cortexaitechnologies.com
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Write SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.CORTEXONE_SSH }}" > ~/.ssh/cortexone.pem
-          chmod 600 ~/.ssh/cortexone.pem
-          ssh-keyscan -H 130.210.25.122 >> ~/.ssh/known_hosts
-
-      - name: Deploy to production server
-        run: |
-          ssh -i ~/.ssh/cortexone.pem -o StrictHostKeyChecking=no \
-            ubuntu@130.210.25.122 << 'ENDSSH'
-            set -e
-            echo "=== CortexONE Production Deploy ==="
-            cd /opt/cortexone
-
-            # Pull latest production branch
-            git fetch origin production
-            git checkout production
-            git reset --hard origin/production
-
-            # Pull new image and do rolling restart
-            docker compose pull app
-            docker compose up -d --no-deps --wait app
-            docker compose exec -T app cortexone \
-              --database cortexone_prod \
-              --update cortex_branding,cortex_api \
-              --stop-after-init \
-              --no-http
-
-            # Reload nginx without downtime
-            docker compose exec -T nginx nginx -s reload
-
-            echo "=== Production deploy complete ==="
+            echo "=== Deploy complete ==="
           ENDSSH
 
       - name: Clean up SSH key
