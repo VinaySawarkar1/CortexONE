@@ -1,6 +1,10 @@
 # Translation of CortexONE Branding (Hindi)
 # License: LGPL-3 - See https://www.gnu.org/licenses/lgpl-3.0.html
 # Copyright (C) 2024 Cortex AI Technologies
+#
+# This file contains the translation of the following modules:
+# 	* cortex_branding
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: CortexONE 18.0\n"
@@ -14,29 +18,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. module: cortex_branding
 msgid "Odoo"
 msgstr "CortexONE"
 
+#. module: cortex_branding
 msgid "Powered by Odoo"
 msgstr "CortexONE द्वारा संचालित"
 
+#. module: cortex_branding
 msgid "Odoo Online"
 msgstr "CortexONE"
 
+#. module: cortex_branding
 msgid "Odoo Community"
 msgstr "CortexONE"
 
+#. module: cortex_branding
 msgid "Odoo Enterprise"
 msgstr "CortexONE"
 
+#. module: cortex_branding
 msgid "My Odoo.com account"
 msgstr "मेरा खाता"
 
+#. module: cortex_branding
 msgid "Odoo Apps"
 msgstr "ऐप्लिकेशन"
 
+#. module: cortex_branding
 msgid "Odoo Bot"
 msgstr "CortexONE सहायक"
 
+#. module: cortex_branding
 msgid "OdooBot"
 msgstr "CortexBot"
