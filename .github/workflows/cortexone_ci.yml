@@ -156,7 +156,7 @@ jobs:
       - name: Write SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.CORTEXONE_SSH }}" > ~/.ssh/cortexone.pem
+          printf "%s\n" "${{ secrets.CORTEXONE_SSH }}" | tr -d '\r' > ~/.ssh/cortexone.pem
           chmod 600 ~/.ssh/cortexone.pem
           ssh-keyscan -H 130.210.25.122 >> ~/.ssh/known_hosts
 
