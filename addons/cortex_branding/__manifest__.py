@@ -23,8 +23,6 @@
         'views/cortex_login_template.xml',
         'views/cortex_mail_layout.xml',
         'views/cortex_report_layout.xml',
-        'views/cortex_webclient_assets.xml',
-        'views/cortex_usermenu.xml',
         'views/cortex_settings.xml',
     ],
     'assets': {

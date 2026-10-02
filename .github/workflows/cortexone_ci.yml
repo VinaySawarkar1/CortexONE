@@ -131,6 +131,7 @@ jobs:
             --db_password testpassword \
             --addons-path addons,odoo/addons \
             --test-enable \
+            --test-tags /cortex_api \
             --stop-after-init \
             -i cortex_branding,cortex_api \
             --log-level=warn

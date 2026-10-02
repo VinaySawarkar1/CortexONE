@@ -5,7 +5,7 @@
 
     <!-- ═══════════════════════════════════════════════════════════════
          Override the web login layout (web.login_layout)
-         Replace logo, title, and remove "Powered by Odoo" footer
+         Replace logo and remove "Powered by Odoo" footer link
          ═══════════════════════════════════════════════════════════════ -->
     <template id="cortex_login_layout" inherit_id="web.login_layout" priority="50">
 
@@ -17,11 +17,6 @@
                 class="o_login_logo"
                 style="max-width:220px; margin-bottom:1.5rem;"
             />
-        </xpath>
-
-        <!-- Replace browser/page title -->
-        <xpath expr="//title" position="replace">
-            <title>CortexONE — Enterprise Resource Planning</title>
         </xpath>
 
         <!-- Replace "Powered by Odoo" footer link -->
