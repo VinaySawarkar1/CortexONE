@@ -51,7 +51,7 @@ COPY --chown=cortexone:cortexone . /opt/cortexone
 # We do NOT rename odoo-bin (it's the real executable with Odoo copyright).
 # We add a thin wrapper called "cortexone" for product-level usage.
 COPY --chown=cortexone:cortexone scripts/cortexone /usr/local/bin/cortexone
-RUN sed -i 's/\r$//' /usr/local/bin/cortexone && chmod +x /usr/local/bin/cortexone
+RUN sed -i 's/\r$//' /usr/local/bin/cortexone /opt/cortexone/odoo-bin && chmod +x /usr/local/bin/cortexone /opt/cortexone/odoo-bin
 
 # ── Config and data directories ───────────────────────────────────────────────
 RUN mkdir -p /etc/cortexone /var/log/cortexone /var/lib/cortexone/filestore \
