@@ -54,3 +54,6 @@ htmlcov/
 # ── Temporary ────────────────────────────────────────────────────────────────
 *.tmp
 *.bak
+
+nginx/ssl/*.key
+nginx/ssl/*.crt
