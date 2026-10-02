@@ -3,21 +3,10 @@
 <!-- Copyright (C) 2024 Cortex AI Technologies -->
 <odoo>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         Hide Enterprise upsell section from General Settings
-         ═══════════════════════════════════════════════════════════════ -->
-    <record id="cortex_hide_enterprise_settings" model="ir.ui.view">
-        <field name="name">cortex.hide.enterprise.settings</field>
-        <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
-        <field name="priority">50</field>
-        <field name="arch" type="xml">
-            <!-- Hide Enterprise upgrade section -->
-            <xpath expr="//div[contains(@class,'o_settings_enterprise')]" position="replace"/>
-            <!-- Hide "Upgrade" button if present -->
-            <xpath expr="//button[contains(@class,'o_enterprise_upgrade')]" position="replace"/>
-        </field>
-    </record>
+    <!-- NOTE: Enterprise upsell nodes (o_settings_enterprise /
+         o_enterprise_upgrade) only exist in Odoo Enterprise. Hiding them via
+         xpath crashes Community installs (Element cannot be located), so this
+         is intentionally done via CSS/JS instead of a view override. -->
 
     <!-- CortexONE section in General Settings -->
     <record id="cortex_settings_view" model="ir.ui.view">
@@ -26,7 +15,7 @@
         <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
         <field name="priority">50</field>
         <field name="arch" type="xml">
-            <xpath expr="//div[@id='general_settings']" position="inside">
+            <xpath expr="//app[@name='general_settings']" position="inside">
                 <div class="app_settings_block" data-string="CortexONE Branding" string="CortexONE Branding">
                     <h2>CortexONE Branding</h2>
                     <div class="row mt16 o_settings_container">

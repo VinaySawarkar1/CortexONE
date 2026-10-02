@@ -6,6 +6,7 @@
     'summary': 'White-label branding for CortexONE ERP',
     'description': """
         Replaces all Odoo Community branding with CortexONE branding.
+
         - Logo, favicon, login page
         - Browser/window title
         - Email and PDF report layouts

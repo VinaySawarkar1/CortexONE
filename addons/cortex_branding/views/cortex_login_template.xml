@@ -10,7 +10,7 @@
     <template id="cortex_login_layout" inherit_id="web.login_layout" priority="50">
 
         <!-- Replace logo in login header -->
-        <xpath expr="//div[contains(@class,'text-center') and contains(@class,'border-bottom')]//img" position="replace">
+        <xpath expr="//div[hasclass('text-center') and hasclass('border-bottom')]//img" position="replace">
             <img
                 src="/cortex_branding/static/src/img/cortexone_logo.png"
                 alt="CortexONE"
@@ -27,18 +27,18 @@
     </template>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         Override web.webclient_bootstrap to set HTML title meta
+         Override web.layout to set HTML title / favicon.
+         NOTE: web.webclient_bootstrap has no <title>/<link> nodes, it only
+         t-calls web.layout — so we must inherit web.layout directly.
          ═══════════════════════════════════════════════════════════════ -->
-    <template id="cortex_webclient_title" inherit_id="web.webclient_bootstrap" priority="50">
+    <template id="cortex_webclient_title" inherit_id="web.layout" priority="50">
         <xpath expr="//title" position="replace">
             <title>CortexONE ERP</title>
         </xpath>
-        <!-- Replace favicon -->
+        <!-- Replace favicon (web.layout only has the shortcut-icon link) -->
         <xpath expr="//link[@rel='shortcut icon']" position="replace">
             <link rel="shortcut icon" type="image/png"
                   href="/cortex_branding/static/src/img/cortexone_favicon.png"/>
-        </xpath>
-        <xpath expr="//link[@rel='icon']" position="replace">
             <link rel="icon" type="image/png"
                   href="/cortex_branding/static/src/img/cortexone_favicon.png"/>
         </xpath>

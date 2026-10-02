@@ -11,41 +11,20 @@
               inherit_id="mail.mail_notification_layout"
               priority="50">
 
-        <!-- Replace logo in email header -->
-        <xpath expr="//img[contains(@t-att-src,'logo') or contains(@src,'logo')]" position="replace">
-            <img
-                src="/cortex_branding/static/src/img/cortexone_logo_email.png"
-                alt="CortexONE"
-                style="max-width:160px; height:auto;"
-            />
-        </xpath>
-
-        <!-- Replace "Odoo" text in footer -->
-        <xpath expr="//span[contains(text(),'Odoo')] | //a[contains(text(),'Odoo')]"
-               position="replace">
-            <span>CortexONE ERP</span>
-        </xpath>
-
-        <!-- Remove odoo.com link in footer -->
+        <!-- Replace "Powered by Odoo" footer link.
+             NOTE: mail.mail_notification_layout has no logo <img> node, so we
+             only override the footer link that is guaranteed to exist. -->
         <xpath expr="//a[contains(@href,'odoo.com')]" position="replace">
-            <a href="https://cortexaitechnologies.com">cortexaitechnologies.com</a>
+            <span>Powered by <a target="_blank" href="https://cortexaitechnologies.com">CortexONE</a></span>
         </xpath>
 
     </template>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         Override portal / website footer "Powered by Odoo"
-         ═══════════════════════════════════════════════════════════════ -->
-    <template id="cortex_portal_footer"
-              inherit_id="web.portal_my_home"
-              priority="50"
-              optional="True">
-        <xpath expr="//*[contains(text(),'Powered by') or contains(@class,'powered')]"
-               position="replace">
-            <span class="text-muted small">
-                Powered by <a href="https://cortexaitechnologies.com">CortexONE</a>
-            </span>
-        </xpath>
-    </template>
+    <!-- Portal "Powered by" branding lives in portal.portal_record_sidebar,
+         not portal.portal_my_home, and portal is an optional dependency.
+         Keep this override out of the base install so CI (which installs only
+         cortex_branding + cortex_api) never fails on a missing parent/xpath.
+         Re-enable with depends=['portal'] + inherit portal.portal_record_sidebar
+         if portal branding is required. -->
 
 </odoo>

@@ -8,28 +8,25 @@
          ═══════════════════════════════════════════════════════════════ -->
     <template id="cortex_external_layout_header"
               inherit_id="web.external_layout_boxed"
-              priority="50"
-              optional="True">
+              priority="50">
 
-        <xpath expr="//img[contains(@src,'logo') or contains(@t-att-src,'logo')]"
-               position="replace">
-            <img
-                t-if="company.logo"
-                t-att-src="image_data_uri(company.logo)"
-                style="max-height:45px;"
-                alt="CortexONE"
-            />
-            <img
-                t-else=""
-                src="/cortex_branding/static/src/img/cortexone_logo.png"
-                style="max-height:45px;"
-                alt="CortexONE"
-            />
-        </xpath>
-
-        <!-- Replace "Odoo" in report footer -->
-        <xpath expr="//*[contains(text(),'Odoo')]" position="replace">
-            <span>CortexONE ERP</span>
+        <!-- NOTE: web.external_layout_boxed contains no 'Odoo' text node,
+             so only the logo <img> (guaranteed via t-att-src) is overridden. -->
+        <xpath expr="//img[contains(@t-att-src,'logo')]" position="replace">
+            <t>
+                <img
+                    t-if="company.logo"
+                    t-att-src="image_data_uri(company.logo)"
+                    style="max-height:45px;"
+                    alt="CortexONE"
+                />
+                <img
+                    t-else=""
+                    src="/cortex_branding/static/src/img/cortexone_logo.png"
+                    style="max-height:45px;"
+                    alt="CortexONE"
+                />
+            </t>
         </xpath>
 
     </template>
@@ -37,23 +34,23 @@
     <!-- Also override the standard layout (non-boxed) -->
     <template id="cortex_external_layout_standard"
               inherit_id="web.external_layout_standard"
-              priority="50"
-              optional="True">
+              priority="50">
 
-        <xpath expr="//img[contains(@src,'logo') or contains(@t-att-src,'logo')]"
-               position="replace">
-            <img
-                t-if="company.logo"
-                t-att-src="image_data_uri(company.logo)"
-                style="max-height:45px;"
-                alt="CortexONE"
-            />
-            <img
-                t-else=""
-                src="/cortex_branding/static/src/img/cortexone_logo.png"
-                style="max-height:45px;"
-                alt="CortexONE"
-            />
+        <xpath expr="//img[contains(@t-att-src,'logo')]" position="replace">
+            <t>
+                <img
+                    t-if="company.logo"
+                    t-att-src="image_data_uri(company.logo)"
+                    style="max-height:45px;"
+                    alt="CortexONE"
+                />
+                <img
+                    t-else=""
+                    src="/cortex_branding/static/src/img/cortexone_logo.png"
+                    style="max-height:45px;"
+                    alt="CortexONE"
+                />
+            </t>
         </xpath>
 
     </template>
